@@ -24,8 +24,7 @@ add_definitions(
   -DFORCE_BUILTIN_LIST=1
 )
 
-set(PROJECT_MODULE_DIR "${CMAKE_SOURCE_DIR}/cmake")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_MODULE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR/cmake}")
 
 set(PSL_FILE "${CMAKE_SOURCE_DIR}/list/public_suffix_list.dat")
 find_package(Python REQUIRED)
