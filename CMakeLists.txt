@@ -17,6 +17,7 @@ set(LIBPSL_VERSION "${psl_VERSION_MAJOR}.${psl_VERSION_MINOR}.${psl_VERSION_PATC
 add_definitions(
   -DPACKAGE_VERSION=\"${LIBPSL_VERSION}\"
   -DBUILDING_PSL=1
+  -DPSL_STATIC=1
 
   # ensure that builtin list is enabled even though the client code
   # is going to ensure utf8 + lowercase instead of bundling more
@@ -27,11 +28,11 @@ add_definitions(
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR/cmake}")
 
 set(PSL_FILE "${CMAKE_SOURCE_DIR}/list/public_suffix_list.dat")
-find_package(Python REQUIRED)
+find_package(Python3 REQUIRED)
 add_custom_target(
   "suffixes_dafsa.h"
   ALL
-  "${Python_EXECUTABLE}"
+  "${Python3_EXECUTABLE}"
   "${CMAKE_SOURCE_DIR}/src/psl-make-dafsa"
   --output-format=cxx+
   "${PSL_FILE}"
