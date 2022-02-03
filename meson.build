@@ -1,9 +1,6 @@
 project('libpsl', 'c',
-  version : '0.21.1',
-  meson_version : '>=0.47.0')
-
-# Derived from LIBPSL_SO_VERSION in configure.ac
-lt_version = '5.3.2'
+  version : files('version.txt'),
+  meson_version : '>=0.57.0')
 
 cc = meson.get_compiler('c')
 
@@ -21,6 +18,8 @@ libidn_dep = notfound
 libunistring = notfound
 networking_deps = notfound
 libiconv_dep = notfound
+
+link_language = 'c'
 
 # FIXME: Cleanup this when Meson gets 'feature-combo':
 # https://github.com/mesonbuild/meson/issues/4566
@@ -61,6 +60,11 @@ if ['libicu', 'auto'].contains(enable_runtime) or ['libicu', 'auto'].contains(en
     endif
     if enable_builtin == 'auto'
       enable_builtin = 'libicu'
+    endif
+    if add_languages('cpp', native : false)
+        link_language = 'cpp'
+    else
+        error('C++ compiler is not available')
     endif
   elif [enable_runtime, enable_builtin].contains('libicu')
     error('You requested libicu but it is not installed.')

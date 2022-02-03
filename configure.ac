@@ -1,5 +1,4 @@
-
-AC_INIT([libpsl], [0.21.1], [tim.ruehsen@gmx.de], [libpsl], [https://github.com/rockdaboot/libpsl])
+AC_INIT([libpsl],[m4_normalize(m4_include(version.txt))],[tim.ruehsen@gmx.de],[libpsl],[https://github.com/rockdaboot/libpsl])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([1.10 no-define foreign dist-lzip])
@@ -34,7 +33,8 @@ AC_CONFIG_FILES([include/libpsl.h])
 # Gettext
 #
 AM_GNU_GETTEXT([external],[need-ngettext])
-AM_GNU_GETTEXT_VERSION([0.18.1])
+AM_GNU_GETTEXT_VERSION([0.19.3])
+AM_GNU_GETTEXT_REQUIRE_VERSION([0.19.3])
 
 #
 # check for gtk-doc
@@ -74,6 +74,14 @@ AM_PATH_PYTHON([2.7])
 
 PKG_PROG_PKG_CONFIG
 
+AC_ARG_ENABLE([fuzzing],
+  [AS_HELP_STRING([--enable-fuzzing], [Turn on fuzzing build (for developers)])],
+  [enable_fuzzing=yes;
+   AC_SUBST([LIB_FUZZING_ENGINE])
+   AC_DEFINE([FUZZING], 1, [Define to 1 if this is a fuzzing build])
+  ], [enable_fuzzing=no; LIB_FUZZING_ENGINE=""])
+AM_CONDITIONAL([FUZZING], [test "$enable_fuzzing" = "yes"])
+
 AC_ARG_ENABLE([cfi],
   [AS_HELP_STRING([--enable-cfi], [Turn on clang's Control Flow Integrity (CFI)])],
   [
@@ -91,6 +99,7 @@ AC_ARG_ENABLE([ubsan],
   [AS_HELP_STRING([--enable-ubsan], [Turn on Undefined Behavior Sanitizer (UBSan)])],
   [
     if test "$enable_ubsan" = yes; then
+      # Set basic UBSAN compiler flags. Add your own to CFLAGS.
       CFLAGS=$CFLAGS" -fsanitize=undefined -fno-sanitize-recover=undefined"
     fi
   ], [ enable_ubsan=no ])
@@ -99,6 +108,7 @@ AC_ARG_ENABLE([asan],
   [AS_HELP_STRING([--enable-asan], [Turn on Address Sanitizer (ASan)])],
   [
     if test "$enable_asan" = yes; then
+      # Set basic ASAN compiler flags. Add your own to CFLAGS.
       CFLAGS=$CFLAGS" -fsanitize=address -fno-omit-frame-pointer"
       AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [CFLAGS="$CFLAGS -fsanitize-address-use-after-scope"])
     fi
@@ -115,7 +125,7 @@ AC_ARG_ENABLE([asan],
 # 4. If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # 5. If any interfaces have been added since the last public release, then increment age.
 # 6. If any existing interfaces have been removed or changed since the last public release, then set age to 0. 
-AC_SUBST([LIBPSL_SO_VERSION], [8:3:3])
+AC_SUBST([LIBPSL_SO_VERSION], m4_normalize(m4_include([libtool_version_info.txt])))
 AC_SUBST([LIBPSL_VERSION], $VERSION)
 
 # Check for enable/disable runtime PSL data
@@ -387,7 +397,6 @@ AC_CONFIG_FILES([Makefile
                  tests/Makefile
                  docs/libpsl/Makefile docs/libpsl/version.xml
                  libpsl.pc:libpsl.pc.in
-                 meson.build
                  msvc/Makefile
                  msvc/config.h.win32
                  msvc/config-msvc.mak])
@@ -411,4 +420,5 @@ AC_MSG_NOTICE([Summary of build options:
   Docs:              $enable_gtk_doc
   Man pages:         $enable_man
   Tests:             ${TESTS_INFO}
+  Fuzzing build:     $enable_fuzzing, $LIB_FUZZING_ENGINE
 ])

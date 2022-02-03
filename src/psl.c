@@ -129,7 +129,7 @@ typedef SSIZE_T ssize_t;
 
 typedef struct {
 	char
-		label_buf[48];
+		label_buf[128];
 	const char *
 		label;
 	unsigned short
@@ -568,16 +568,14 @@ static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 	punycode_uint input[256];
 	const char *label, *e;
 
-	for (e = label = domain; e; label = e + 1) {
+	for (e = label = domain; e;) {
 		e = strchr(label, '.');
 		labellen = e ? (size_t) (e - label) : strlen(label);
-		/* printf("s=%s inlen=%zd\n", label, labellen); */
 
 		if (mem_is_ascii(label, labellen)) {
 			if (outlen + labellen + (e != NULL) >= outsize)
 				return 1;
 
-			/* printf("outlen=%zd labellen=%zd\n", outlen, labellen); */
 			memcpy(out + outlen, label, labellen);
 			outlen += labellen;
 		} else {
@@ -592,15 +590,16 @@ static int domain_to_punycode(const char *domain, char *out, size_t outsize)
 			memcpy(out + outlen, "xn--", 4);
 			outlen += 4;
 
-			labellen = outsize - outlen;
-			/* printf("n=%zd space_left=%zd\n", n, labellen); */
+			labellen = outsize - outlen - (e != NULL) - 1; // -1 to leave space for the trailing \0
 			if (punycode_encode(inputlen, input, &labellen, out + outlen))
 				return 1;
 			outlen += labellen;
 		}
 
-		if (e)
+		if (e) {
+			label = e + 1;
 			out[outlen++] = '.';
+		}
 		out[outlen] = 0;
 	}
 
@@ -838,8 +837,11 @@ static int is_public_suffix(const psl_ctx_t *psl, const char *domain, int type)
 	suffix.nlabels = 1;
 
 	for (p = domain; *p; p++) {
-		if (*p == '.')
+		if (*p == '.') {
+			if (suffix.nlabels == 255) // weird input, avoid 8bit overflow
+				return 0;
 			suffix.nlabels++;
+		}
 		else if (*((unsigned char *)p) >= 128)
 			need_conversion = 1; /* in case domain is non-ascii we need a toASCII conversion */
 	}
@@ -1621,6 +1623,9 @@ static int isip(const char *hostname)
  * or in ASCII/ACE (punycode) format. Other encodings or mixing UTF-8 and punycode likely result in incorrect return values.
  *
  * Use helper function psl_str_to_utf8lower() for normalization of @hostname and @cookie_domain.
+ *
+ * Hint for Windows users:
+ * Please make sure the calling application has called WSAStartup() before calling psl_is_cookie_domain_acceptable().
  *
  * Examples:
  * 1. Cookie domain 'example.com' would be acceptable for hostname 'www.example.com',
