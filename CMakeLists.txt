@@ -29,8 +29,8 @@ set(PSL_FILE "${CMAKE_SOURCE_DIR}/list/public_suffix_list.dat")
 
 find_program(
   PYTHON python
-  NAMES python2 python3
-  HINTS ENV PYTHON ENV PYTHON2 ENV PYTHON3
+  NAMES python2 python3 python3.7
+  HINTS /usr/pkg/bin
   REQUIRED
 )
 add_custom_target(
