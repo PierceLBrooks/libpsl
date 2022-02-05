@@ -25,10 +25,14 @@ add_definitions(
   -DFORCE_BUILTIN_LIST=1
 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR/cmake}")
-
 set(PSL_FILE "${CMAKE_SOURCE_DIR}/list/public_suffix_list.dat")
-find_program(PYTHON python NAMES python python2 python3 REQUIRED)
+
+find_program(
+  PYTHON python
+  NAMES python2 python3
+  HINTS ENV PYTHON ENV PYTHON2 ENV PYTHON3
+  REQUIRED
+)
 add_custom_target(
   "suffixes_dafsa.h"
   ALL
