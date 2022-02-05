@@ -28,11 +28,11 @@ add_definitions(
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR/cmake}")
 
 set(PSL_FILE "${CMAKE_SOURCE_DIR}/list/public_suffix_list.dat")
-find_package(Python3 REQUIRED)
+find_program(PYTHON python NAMES python python2 python3 REQUIRED)
 add_custom_target(
   "suffixes_dafsa.h"
   ALL
-  "${Python3_EXECUTABLE}"
+  "${PYTHON}"
   "${CMAKE_SOURCE_DIR}/src/psl-make-dafsa"
   --output-format=cxx+
   "${PSL_FILE}"
