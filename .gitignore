@@ -17,6 +17,7 @@ ABOUT-NLS
 aclocal.m4
 ar-lib
 autom4te.cache/
+build/
 compile
 config.guess
 config.h
